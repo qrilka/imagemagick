@@ -14,7 +14,7 @@ module Graphics.ImageMagick.MagickWand.Types
   ) where
 
 import           Control.Exception.Base
-import           Control.Monad.Trans.Resource
+import           Control.Monad.Trans.Resource                      ()
 import           Data.Typeable
 import           Foreign
 import           Foreign.C.String
@@ -47,6 +47,11 @@ class ExceptionCarrier a where
 
 instance ExceptionCarrier (Ptr MagickWand) where
   getException w = alloca $ \x -> do
+        e <- F.magickGetException w x
+        e' <- peekCString e
+        print "in getex"
+        print e
+        print e'
         s <- peekCString =<< F.magickGetException w x
         x' <- peek x
         return $ ImageWandException x' s
