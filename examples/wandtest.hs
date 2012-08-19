@@ -92,7 +92,7 @@ main = withMagickWandGenesis $ do
 
   setIteratorIndex magick_wand 2
   importImagePixels magick_wand 10 10 3 3 "RGB" primary_colors
-  pixels <- exportImagePixels magick_wand 10 10 3 3 "RGB" charPixel
+  pixels <- exportImagePixels magick_wand 10 10 3 3 "RGB" CharPixels
 
   when (pixels /= primary_colors) $ exitWithMessage "Get pixels does not match set pixels"
 {-

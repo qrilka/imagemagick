@@ -15,6 +15,7 @@ module Graphics.ImageMagick.MagickWand.Types
   , module Graphics.ImageMagick.MagickCore.Types
   , Pixel(..)
   , Pixels(..)
+  , constructPixels
   ) where
 
 import           Control.Exception.Base
@@ -73,29 +74,39 @@ instance ExceptionCarrier (Ptr DrawingWand) where
       x' <- peek x
       return $ ImageWandException x' s
 
-class (Storable a) => Pixel a where
+class (Storable a, Eq a) => Pixel a where
   data Pixels a :: *
   pixels :: Pixels a -> [a]
   pixelStorageType :: (Pixels a) -> StorageType
-  allocaPixels :: Int -> (Ptr a -> IO b) -> IO b
-  allocaPixels n f = allocaArray n (\(p :: Ptr a) -> f p)
+
   withTypedPixels :: Pixels a -> (StorageType -> Ptr a -> IO b) -> IO b
   withTypedPixels p f = withArray (pixels p) (f (pixelStorageType p))
 
+
+constructPixels :: (Pixel a) => Int -> ([a] -> Pixels a) -> (Ptr a -> IO ()) -> IO (Pixels a)
+constructPixels n c f = allocaArray n $ \(p :: Ptr a) -> do
+    f p
+    d <- peekArray n p
+    return $ c d
+
 instance Pixel Int8 where
   data Pixels Int8 = CharPixels [Int8]
+                   deriving (Eq, Show)
   pixelStorageType = const charPixel
 
 instance Pixel Int16 where
   data Pixels Int16 = ShortPixels [Int16]
+         deriving (Eq, Show)
   pixelStorageType = const shortPixel
 
 instance Pixel Int32 where
   data Pixels Int32 = IntegerPixels [Int32]
+         deriving (Eq, Show)
   pixelStorageType = const longPixel
 
 instance Pixel Int64 where
   data Pixels Int64 = LongPixels [Int64]
+         deriving (Eq, Show)
   pixelStorageType = const longPixel
 
 instance Pixel Float where

@@ -4,6 +4,7 @@ module Graphics.ImageMagick.MagickWand.Utils
   , withException
   , withException_
   , withExceptionIO
+  , withExceptionIO_
   )
   where
 
@@ -36,6 +37,9 @@ withExceptionIO a f = liftIO $ do
   (r,b) <- f
   unless (r==mTrue) $ getException a >>= throw
   return b
+
+withExceptionIO_ :: (ExceptionCarrier a) => a -> IO MagickBooleanType -> IO ()
+withExceptionIO_ a f = liftIO $ f >>= \x -> void $ unless (x==mTrue) (getException a >>= throw)
 
 toMBool :: Bool -> MagickBooleanType
 toMBool True  = mTrue

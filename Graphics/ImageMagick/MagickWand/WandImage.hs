@@ -558,24 +558,34 @@ exportImagePixels :: (MonadResource m, Pixel a) => PMagickWand
                      -> Int     -- ^ rows
                      -- TODO migrate to typesafe parameter
                      -> Text    -- ^ map
-                     -> StorageType
+                     -> ([a] -> Pixels a)
                      -> m (Pixels a)
-exportImagePixels w x y width height cmap stype =
-  liftIO $ withPixels -- exportPixels
+exportImagePixels w x y width height cmap ctor =
+  liftIO $ constructPixels arrLength ctor export -- exportPixels
     where
       x' = fromIntegral x
       y' = fromIntegral y
       width' = fromIntegral width
       height' = fromIntegral height
       arrLength = width * height * (T.length cmap)
-      withPixels :: IO (Pixels a)
-      withPixels = case stype of
-        st | st == charPixel -> (allocaPixels arrLength $ \p -> do
+--      withPixels :: IO (Pixels a)
+--      withPixels = case stype of
+--        st | st == charPixel -> constructPixels arrLength CharPixels export {-$ \ppixels ->
+--          withExceptionIO_ w $ do
+--            useAsCString (encodeUtf8 cmap) $
+--              \cstr -> F.magickExportImagePixels w x' y' width' height' cstr stype (castPtr ppixels)
+                                {-(allocaPixels arrLength $ \p -> do
           (d :: [Int8]) <- peekArray arrLength p
-          return $ CharPixels d) :: IO (Pixels Int8)
-        st | st == shortPixel -> (allocaPixels arrLength $ \p -> do
+          return $ CharPixels d) :: IO (Pixels Int8) -}
+--        st | st == shortPixel -> constructPixels arrLength ShortPixels export
+{-(allocaPixels arrLength $ \p -> do
           (d :: [Int16]) <- peekArray arrLength p
-          return $ ShortPixels d) :: IO (Pixels Int16)
+          return $ ShortPixels d) :: IO (Pixels Int16) -}
+      stype = pixelStorageType $ ctor []
+      export ppixels = withExceptionIO_ w $ do
+            useAsCString (encodeUtf8 cmap) $
+              \cstr -> F.magickExportImagePixels w x' y' width' height' cstr stype (castPtr ppixels)
+
 --      charp :: (Ptr Int8) -> IO (Pixels Int8)
 --      charp p = do
 --        d <- peekArray arrLength p
