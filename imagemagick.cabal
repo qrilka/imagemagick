@@ -395,4 +395,30 @@ executable            wandtest
   extensions:         EmptyDataDecls
   Ghc-options:        -Wall
   pkgconfig-depends:  ImageMagick, MagickWand
-  Buildable:          True
+  Buildable:          False
+
+test-suite           image-tests
+  type:              exitcode-stdio-1.0
+  main-is:           ImageTest.hs
+  hs-source-dirs:    test
+  Build-Depends:     base
+                     , resourcet == 0.3.*
+                     , transformers == 0.3.*
+                     , vector == 0.9.*
+                     , bytestring == 0.9.*
+                     , text == 0.11.*
+                     , system-filepath == 0.4.*
+                     , imagemagick
+                     , QuickCheck >= 2
+                     , HUnit
+                     , test-framework
+                     , test-framework-hunit
+                     , test-framework-quickcheck2
+  Ghc-options:        -Wall
+  pkgconfig-depends:  ImageMagick, MagickWand
+
+
+source-repository head
+  type:     git
+  location: git://github.com/qnikst/imagemagick.git
+
